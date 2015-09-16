@@ -1,0 +1,26 @@
+{
+  "name": "hutsi/yii2-zendesk",
+  "description": "Yii2 zendesk plugin",
+  "type": "extension",
+  "license": "GPL-v3",
+  "support": {
+    "issues": "https://github.com/hutsi/yii2-zendesk",
+    "source": "https://github.com/hutsi/yii2-zendesk"
+  },
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=5.4.0",
+    "yiisoft/yii2": ">=2.0.0",
+    "guzzlehttp/guzzle": "~5.2.0"
+  },
+  "require-dev": {
+    "codeception/codeception": "2.0.11",
+    "codeception/verify": "0.2.7",
+    "codeception/specify": "0.4.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "hutsi\\yii2-zendesk\\": ""
+    }
+  }
+}
