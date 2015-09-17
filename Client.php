@@ -16,6 +16,8 @@ class Client extends Component
     public $apiKey;
     public $user;
     public $baseUrl;
+    public $password;
+    public $authType;
 
     /**
      * @var $httpClient \GuzzleHttp\Client
@@ -28,65 +30,97 @@ class Client extends Component
     public function init()
     {
         if (!$this->httpClient) {
-            $this->httpClient = new \GuzzleHttp\Client($this->$baseUrl);
+            $this->httpClient = new \GuzzleHttp\Client([
+                'base_url' => $this->baseUrl,
+                'defaults' => [
+                    'verify' => false,
+                    'auth'  => $this->getAuthSettings(),
+                    'headers' => [
+                        'Content-Type' => 'application/json'
+                    ]
+                ]
+            ]);
         }
     }
 
-    public function execute($method, $requestUrl, $data)
+    /**
+     * @TODO: Oauth support
+     * @return array
+     */
+    public function getAuthSettings()
     {
-        $request = $this->httpClient->createRequest($method, $this->baseUrl . $requestUrl, [
-            'curl' => [
-                'CURLOPT_FOLLOWLOCATION' => true,
-                'CURLOPT_MAXREDIRS' => 10,
-                'CURLOPT_URL' => $this->baseUrl . $requestUrl,
-                'CURLOPT_USERPWD' => $this->user . '/token:' . $this->apiKey,
-                'CURLOPT_CUSTOMREQUEST' => $method,
-                'CURLOPT_POSTFIELDS' => $data,
-                'CURLOPT_HTTPHEADER' => ['Content-type: application/json'],
-                'CURLOPT_USERAGENT' => 'MozillaXYZ/1.0',
-                'CURLOPT_RETURNTRANSFER' => true,
-                'CURLOPT_TIMEOUT' => 10
-            ]
-        ]);
-
-        $r =  $this->httpClient->send($request);
-        exit(var_dump($r));
-    }
-
-    /*
-    function curlWrap($url, $json, $action)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        curl_setopt($ch, CURLOPT_URL, ZDURL . $url);
-        curl_setopt($ch, CURLOPT_USERPWD, ZDUSER . "/token:" . ZDAPIKEY);
-        switch ($action) {
-            case "POST":
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+        switch ($this->authType) {
+            case 'basic':
+                return [$this->user, $this->password, $this->authType];
                 break;
-            case "GET":
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-                break;
-            case "PUT":
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-                break;
-            case "DELETE":
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+            case 'digest':
+                return [$this->user . '/token', $this->apiKey, $this->authType];
                 break;
             default:
+                $result = [];
                 break;
         }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
-        curl_setopt($ch, CURLOPT_USERAGENT, "MozillaXYZ/1.0");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        $output = curl_exec($ch);
-        curl_close($ch);
-        $decoded = json_decode($output);
-        return $decoded;
+
+        return $result;
     }
-    */
+
+    /**
+     * @param $method
+     * @param $requestUrl
+     * @param array $data
+     * @return mixed
+     */
+    public function execute($method, $requestUrl, $data = [])
+    {
+        $request = $this->httpClient->createRequest($method, $this->baseUrl . $requestUrl);
+        $request->setQuery($data);
+
+        $response = $this->httpClient->send($request);
+        return $response->json();
+    }
+
+    /**
+     * @param $requestUrl
+     * @param array $data
+     * @return mixed
+     */
+    public function get($requestUrl, $data = [])
+    {
+        return $this->execute('GET', $requestUrl, $data);
+    }
+
+    /**
+     * @param $requestUrl
+     * @param array $data
+     * @return mixed
+     */
+    public function post($requestUrl, $data = [])
+    {
+        return $this->execute('POST', $requestUrl, $data);
+    }
+
+    /**
+     * @param $requestUrl
+     * @param array $data
+     * @return mixed
+     */
+    public function put($requestUrl, $data = [])
+    {
+        return $this->execute('PUT', $requestUrl, $data);
+    }
+
+    /**
+     * @param $requestUrl
+     * @param array $data
+     * @return mixed
+     */
+    public function delete($requestUrl, $data = [])
+    {
+        return $this->execute('DELETE', $requestUrl, $data);
+    }
+
+    public function search()
+    {
+        return $this->get('search.json', []);
+    }
 }
