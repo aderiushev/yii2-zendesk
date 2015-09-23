@@ -72,14 +72,19 @@ class Client extends Component
      */
     public function execute($method, $requestUrl, $data = [])
     {
-        $request = $this->httpClient->createRequest($method, $this->baseUrl . $requestUrl, [
-            'debug' => YII_DEBUG
-        ]);
+        $request = $this->httpClient->createRequest($method, $this->baseUrl . $requestUrl);
         $request->setQuery($data);
 
+        try {
+            $response = $this->httpClient->send($request);
 
-        $response = $this->httpClient->send($request);
-        return $response->json();
+            return $response->json();
+        }
+        catch(\Exception $e) {
+            //var_dump($data);
+            //exit(var_dump($e->getTrace()));
+            return false;
+        }
 
     }
 
@@ -123,6 +128,9 @@ class Client extends Component
         return $this->execute('DELETE', $requestUrl, $data);
     }
 
+    /**
+     * @return mixed
+     */
     public function search()
     {
         return $this->get('search.json', []);

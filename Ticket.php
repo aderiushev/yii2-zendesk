@@ -99,7 +99,7 @@ class Ticket extends Model
         }
 
         if ($this->id) {
-            return Yii::$app->zendesk->put('/tickets'.$this->id.'.json', [
+            return Yii::$app->zendesk->put('/tickets/'.$this->id.'.json', [
                 'ticket' => $this->getAttributes()
             ]);
         }

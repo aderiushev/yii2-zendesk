@@ -94,7 +94,7 @@ class Attachment extends Model
             if (isset($resposeArray['upload']['attachments'])) {
                 $attachFields = array_intersect_key($resposeArray['upload']['attachments'][0], $this->getAttributes());
                 $this->setAttributes($attachFields);
-                return $this->id;
+                return $resposeArray['upload']['token'];
             }
             else {
                 return false;
