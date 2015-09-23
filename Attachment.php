@@ -86,7 +86,7 @@ class Attachment extends Model
             curl_close($ch);
 
             if ($hasError) {
-                throw new Exception(500, curl_error($ch));
+                throw new Exception(curl_error($ch));
             }
 
             $resposeArray = Json::decode($response);
