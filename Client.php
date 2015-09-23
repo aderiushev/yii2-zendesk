@@ -72,11 +72,15 @@ class Client extends Component
      */
     public function execute($method, $requestUrl, $data = [])
     {
-        $request = $this->httpClient->createRequest($method, $this->baseUrl . $requestUrl);
+        $request = $this->httpClient->createRequest($method, $this->baseUrl . $requestUrl, [
+            'debug' => YII_DEBUG
+        ]);
         $request->setQuery($data);
+
 
         $response = $this->httpClient->send($request);
         return $response->json();
+
     }
 
     /**

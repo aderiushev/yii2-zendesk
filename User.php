@@ -55,16 +55,18 @@ class User extends Model
      */
     public function save()
     {
-        if ($this->isNewRecord) {
-            return Yii::$app->zendesk->post('/users.json', [
-                'user' => $this->getAttributes()
-            ]);
-        }
-        else {
+        if ($this->id) {
             return Yii::$app->zendesk->put('/users/'.$this->id.'.json', [
                 'user' => $this->getAttributes()
             ]);
         }
-    }
+        else {
+            $result =  Yii::$app->zendesk->post('/users.json', [
+                'user' => $this->getAttributes()
+            ]);
+            $this->id = $result['id'];
 
+            return $this->id;
+        }
+    }
 }

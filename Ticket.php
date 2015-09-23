@@ -13,6 +13,18 @@ use yii\base\Model;
  */
 class Ticket extends Model
 {
+    const PRIORITY_URGENT = 'urgent';
+    const PRIORITY_HIGH = 'high';
+    const PRIORITY_NORMAL = 'normal';
+    const PRIORITY_LOW = 'low';
+
+    const STATUS_NEW = 'new';
+    const STATUS_OPEN = 'open';
+    const STATUS_PENDING = 'pending';
+    const STATUS_HOLD = 'hold';
+    const STATUS_SOLVED = 'solved';
+    const STATUS_CLOSED = 'closed';
+
     public $id;
     public $url;
     public $external_id;
@@ -25,7 +37,7 @@ class Ticket extends Model
     public $recipient;
     public $requester_id;
     public $submitter_id;
-    public $asignee_id;
+    public $assignee_id;
     public $group_id;
     public $collaborator_ids;
     public $forum_topic_id;
@@ -41,6 +53,9 @@ class Ticket extends Model
     public $brand_id;
     public $created_at;
     public $updated_at;
+    public $comment;
+
+    public $uploads;
 
     public $requester;
 
@@ -49,18 +64,18 @@ class Ticket extends Model
         return [
             [['created_at', 'updated_at', 'due_at'], 'safe'],
             ['type', 'default', 'value' => 'question'],
-            ['priority', 'defalut', 'value' => 'normal'],
-            ['status', 'defalut', 'value' => 'new'],
-            [['collaborator_ids', 'tags', 'custom_fields', 'sharing_agreement_ids', 'followup_ids'], function($attribute) {
+            ['status', 'default', 'value' => 'new'],
+            [['collaborator_ids', 'tags', 'custom_fields', 'sharing_agreement_ids', 'followup_ids', 'uploads', 'comment'], function($attribute) {
                 return is_array($this->$attribute);
             }],
+            ['status', 'default', 'value' => self::STATUS_NEW],
+            ['status', 'in', 'range' => [self::STATUS_NEW, self::STATUS_OPEN, self::STATUS_PENDING, self::STATUS_HOLD, self::STATUS_SOLVED, self::STATUS_CLOSED]],
+            ['priority', 'default', 'value' => self::PRIORITY_NORMAL],
+            ['priority', 'in', 'range' => [self::PRIORITY_URGENT, self::PRIORITY_HIGH, self::PRIORITY_NORMAL, self::PRIORITY_LOW]],
             [['external_id', 'type', 'subject', 'raw_subject', 'description', 'priority', 'status', 'recipient'], 'string'],
-            [['requester_id', 'submitter_id', 'assignee_id', 'organization_id', 'group_id', 'forum_topic_id', 'problem_id', 'ticket_form_id', 'brand_id'], 'integer'],
+            [['requester_id', 'submitter_id', 'assignee_id', 'group_id', 'forum_topic_id', 'problem_id', 'brand_id'], 'integer'],
             ['has_incidents', 'boolean'],
-            ['email', 'email'],
             ['url', 'url'],
-            ['role', 'default', 'value' => 'end-user'],
-
         ];
     }
 
@@ -74,17 +89,22 @@ class Ticket extends Model
 
     /**
      * Performs update or create Ticket
+     * @param bool $runValidation
      * @return mixed
      */
-    public function save()
+    public function save($runValidation = true)
     {
-        if ($this->isNewRecord) {
-            return Yii::$app->zendesk->post('/tickets.json', [
+        if ($runValidation) {
+            $this->validate();
+        }
+
+        if ($this->id) {
+            return Yii::$app->zendesk->put('/tickets'.$this->id.'.json', [
                 'ticket' => $this->getAttributes()
             ]);
         }
         else {
-            return Yii::$app->zendesk->put('/tickets'.$this->id.'.json', [
+            return Yii::$app->zendesk->post('/tickets.json', [
                 'ticket' => $this->getAttributes()
             ]);
         }

@@ -3,7 +3,9 @@
 namespace hutsi\zendesk;
 
 use Yii;
+use yii\base\Exception;
 use yii\base\Model;
+use yii\helpers\Json;
 
 /**
  * Class Attachment
@@ -20,16 +22,23 @@ class Attachment extends Model
     public $size;
     public $thumbnails;
     public $inline;
+    public $url;
+
+    /**
+     * @var $uploadedFile \yii\web\UploadedFile
+     */
+    public $uploadedFile;
 
     public function rules()
     {
         return [
-            [['thumbnails'], function($attribute) {
-                return is_array($this->$attribute);
-            }],
             [['file_name', 'content_url', 'content_type'], 'string'],
-            [['size'], 'integer'],
+            [['size', 'id'], 'integer'],
             ['inline', 'boolean'],
+            ['url', 'url'],
+            ['uploadedFile', function($attribute) {
+               return $this->$attribute instanceof \yii\web\UploadedFile;
+            }],
             [['thumbnails'], function($attribute) {
                 return is_array($this->$attribute);
             }],
@@ -38,18 +47,58 @@ class Attachment extends Model
     }
 
     /**
-     * Performs update or create Ticket
-     * @return mixed
+     * @return $this
+     * @throws Exception
      */
-    public function save()
+    public function save($runValidation = true)
     {
-        if ($this->isNewRecord) {
-            return Yii::$app->zendesk->post('/uploads.json', [
-                'ticket' => $this->getAttributes()
-            ]);
+        if ($runValidation) {
+            $this->validate();
+        }
+
+        if ($this->id) {
+            return $this;
         }
         else {
-            return;
+            $file = fopen($this->uploadedFile->tempName, "r");
+            $fileSize = $this->uploadedFile->size;
+            $postFields = fread($file, $fileSize);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+            curl_setopt($ch, CURLOPT_URL, Yii::$app->zendesk->baseUrl.'/uploads.json?filename=' . $this->uploadedFile->baseName);
+            curl_setopt($ch, CURLOPT_USERPWD, Yii::$app->zendesk->user."/token:".Yii::$app->zendesk->apiKey);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/binary']);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            curl_setopt($ch, CURLOPT_INFILE, $file);
+            curl_setopt($ch, CURLOPT_INFILESIZE, $fileSize);
+            curl_setopt($ch, CURLOPT_USERAGENT, "MozillaXYZ/1.0");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_VERBOSE, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            $response = curl_exec($ch);
+
+            $hasError = curl_errno($ch);
+            curl_close($ch);
+
+            if ($hasError) {
+                throw new Exception(500, curl_error($ch));
+            }
+
+            $resposeArray = Json::decode($response);
+
+            if (isset($resposeArray['upload']['attachments'])) {
+                $attachFields = array_intersect_key($resposeArray['upload']['attachments'][0], $this->getAttributes());
+                $this->setAttributes($attachFields);
+                return $this->id;
+            }
+            else {
+                return false;
+            }
         }
     }
 }
