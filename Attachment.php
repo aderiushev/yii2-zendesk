@@ -61,12 +61,13 @@ class Attachment extends Model
         }
         else {
             $file = fopen($this->uploadedFile->tempName, "r");
-            $fileSize = $this->uploadedFile->size;
+            $fileSize = filesize($this->uploadedFile->tempName);
             $postFields = fread($file, $fileSize);
+            $filename = $this->uploadedFile->baseName ? $this->uploadedFile->baseName : $this->uploadedFile->name;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-            curl_setopt($ch, CURLOPT_URL, Yii::$app->zendesk->baseUrl.'/uploads.json?filename=' . $this->uploadedFile->baseName);
+            curl_setopt($ch, CURLOPT_URL, Yii::$app->zendesk->baseUrl.'/uploads.json?filename=' . $filename);
             curl_setopt($ch, CURLOPT_USERPWD, Yii::$app->zendesk->user."/token:".Yii::$app->zendesk->apiKey);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/binary']);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
