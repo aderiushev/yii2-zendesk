@@ -4,6 +4,7 @@ namespace hutsi\zendesk;
 
 use Yii;
 use yii\base\Component;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class Client
@@ -30,7 +31,7 @@ class Client extends Component
     public function init()
     {
         if (!$this->httpClient) {
-            $this->httpClient = new \GuzzleHttp\Client([
+            $client = new \GuzzleHttp\Client([
                 'base_url' => $this->baseUrl,
                 'defaults' => [
                     'verify' => false,
@@ -39,6 +40,10 @@ class Client extends Component
                         'Content-Type' => 'application/json'
                     ]
                 ]
+            ]);
+
+            $this->httpClient = new \understeam\httpclient\Client([
+                'client' => $client
             ]);
         }
     }
@@ -67,72 +72,63 @@ class Client extends Component
     /**
      * @param $method
      * @param $requestUrl
-     * @param array $data
-     * @return mixed
+     * @param array $options
+     * @return bool
      */
-    public function execute($method, $requestUrl, $data = [])
+    public function execute($method, $requestUrl, $options = [])
     {
-        $request = $this->httpClient->createRequest($method, $this->baseUrl . $requestUrl);
-        $request->setQuery($data);
 
         try {
-            $response = $this->httpClient->send($request);
-
-            return $response->json();
+            return $this->httpClient->request($this->baseUrl . $requestUrl, $method, null, $options);
         }
         catch(\Exception $e) {
-            //var_dump($data);
-            //exit(var_dump($e->getTrace()));
             return false;
         }
 
     }
 
-    /**
-     * @param $requestUrl
-     * @param array $data
-     * @return mixed
-     */
-    public function get($requestUrl, $data = [])
+    public function beforeRequest()
     {
-        return $this->execute('GET', $requestUrl, $data);
+
     }
 
     /**
      * @param $requestUrl
-     * @param array $data
-     * @return mixed
+     * @param array $options
+     * @return bool
      */
-    public function post($requestUrl, $data = [])
+    public function get($requestUrl, $options = [])
     {
-        return $this->execute('POST', $requestUrl, $data);
+        return $this->execute('GET', $requestUrl, $options);
     }
 
     /**
      * @param $requestUrl
-     * @param array $data
-     * @return mixed
+     * @param array $options
+     * @return bool
      */
-    public function put($requestUrl, $data = [])
+    public function post($requestUrl, $options = [])
     {
-        return $this->execute('PUT', $requestUrl, $data);
+        return $this->execute('POST', $requestUrl, $options);
     }
 
     /**
      * @param $requestUrl
-     * @param array $data
-     * @return mixed
+     * @param array $options
+     * @return bool
      */
-    public function delete($requestUrl, $data = [])
+    public function put($requestUrl, $options = [])
     {
-        return $this->execute('DELETE', $requestUrl, $data);
+        return $this->execute('PUT', $requestUrl, $options);
     }
 
     /**
+     * @param $requestUrl
+     * @param array $options
      * @return mixed
      */
-    public function search()
+    public function delete($requestUrl, $options = [])
     {
-        return $this->get('search.json', []);
+        return $this->execute('DELETE', $requestUrl, $options);
     }
 }

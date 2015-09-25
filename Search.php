@@ -42,9 +42,11 @@ class Search extends Model
         if ($this->validate()) {
             $httpQuery = http_build_query(ArrayHelper::merge($this->query, $this->getAttributes(['type', 'sort_by', 'sort_order'])));
             $zendeskQuery = strtr($httpQuery, ['=' => ':', '&' => ' ']);
-            $response = Yii::$app->zendesk->get('/search.json', ['query' => urldecode($zendeskQuery)]);
+
+            $response = Yii::$app->zendesk->get('/search.json', ['query' => ['query' => urldecode($zendeskQuery)]]);
+
             return isset($response['results']) ? $response['results'] : [];
-            
+
         }
         else {
             return false;
