@@ -91,7 +91,6 @@ class Attachment extends Model
             }
 
             $resposeArray = Json::decode($response);
-
             if (isset($resposeArray['upload']['attachments'])) {
                 $attachFields = array_intersect_key($resposeArray['upload']['attachments'][0], $this->getAttributes());
                 $this->setAttributes($attachFields);

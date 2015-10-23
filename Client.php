@@ -4,7 +4,6 @@ namespace hutsi\zendesk;
 
 use Yii;
 use yii\base\Component;
-use yii\helpers\ArrayHelper;
 
 /**
  * Class Client
@@ -38,7 +37,8 @@ class Client extends Component
                     'auth'  => $this->getAuthSettings(),
                     'headers' => [
                         'Content-Type' => 'application/json'
-                    ]
+                    ],
+                    'debug' => YII_DEBUG
                 ]
             ]);
 
@@ -74,21 +74,16 @@ class Client extends Component
      * @param $requestUrl
      * @param array $options
      * @return bool
+     * @throws \Exception
      */
     public function execute($method, $requestUrl, $options = [])
     {
-
         try {
             return $this->httpClient->request($this->baseUrl . $requestUrl, $method, null, $options);
         }
         catch(\Exception $e) {
-            return false;
+            throw $e;
         }
-
-    }
-
-    public function beforeRequest()
-    {
 
     }
 

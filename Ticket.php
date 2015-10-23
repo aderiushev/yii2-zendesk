@@ -55,8 +55,6 @@ class Ticket extends Model
     public $updated_at;
     public $comment;
 
-    public $uploads;
-
     public $requester;
 
     public function rules()
@@ -65,7 +63,7 @@ class Ticket extends Model
             [['created_at', 'updated_at', 'due_at'], 'safe'],
             ['type', 'default', 'value' => 'question'],
             ['status', 'default', 'value' => 'new'],
-            [['collaborator_ids', 'tags', 'custom_fields', 'sharing_agreement_ids', 'followup_ids', 'uploads', 'comment'], function($attribute) {
+            [['collaborator_ids', 'tags', 'custom_fields', 'sharing_agreement_ids', 'followup_ids', 'comment'], function($attribute) {
                 return is_array($this->$attribute);
             }],
             ['status', 'default', 'value' => self::STATUS_NEW],
@@ -100,13 +98,20 @@ class Ticket extends Model
 
         if ($this->id) {
             return Yii::$app->zendesk->put('/tickets/'.$this->id.'.json', [
-                'ticket' => $this->getAttributes()
+                'body' => json_encode([
+                    'ticket' => $this->getAttributes()
+                ])
             ]);
         }
         else {
-            return Yii::$app->zendesk->post('/tickets.json', [
-                'ticket' => $this->getAttributes()
+            $result =  Yii::$app->zendesk->post('/tickets.json', [
+                'body' => json_encode([
+                    'ticket' => $this->getAttributes()
+                ])
             ]);
+            $this->id = $result['ticket']['id'];
+
+            return $this->id;
         }
     }
 }
