@@ -25,6 +25,11 @@ class Ticket extends Model
     const STATUS_SOLVED = 'solved';
     const STATUS_CLOSED = 'closed';
 
+    const TYPE_PROBLEM = 'problem';
+    const TYPE_INCIDENT = 'incident';
+    const TYPE_QUESTION = 'question';
+    const TYPE_TASK = 'task';
+
     public $id;
     public $url;
     public $external_id;
