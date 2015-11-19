@@ -37,8 +37,7 @@ $results = $client->get('/users.json', []);
 Another variant is to use build-in plugin functions to work with Users, Tickets, Search, Attachments instances.
 In your form handler use:
 ```php
-use common\helpers\StringHelper;
-use common\models\Feedback;
+use yii\helpers\StringHelper;
 use hutsi\zendesk\Attachment;
 use hutsi\zendesk\Search;
 use hutsi\zendesk\Ticket;
