@@ -2,6 +2,22 @@
 Yii2 plugin for zendesk service support (https://www.zendesk.com)
 
 ## How to use:
+Add the following line to composer.json, __require__ section
+```php
+"hutsi/yii2-zendesk": "3.1",
+```
+Add a component to your main.php config file
+```php
+'zendesk' => [
+    'class' => 'hutsi\zendesk\Client',
+    'apiKey' => 'YOUR_API_KEY',
+    'user' => 'YOUR_USER',
+    'baseUrl' => 'https://rostelecom.YOUR_PROJECT_NAME.com/api/v2',
+    'password' => 'YOUR_PASSWORD',
+    'authType' => 'basic'
+],
+```
+In your form handler use:
 ```php
 use common\helpers\StringHelper;
 use common\models\Feedback;
