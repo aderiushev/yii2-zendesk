@@ -73,7 +73,7 @@ $zTicket = new Ticket([
     'requester' => [
         'email' => $zUser->email
     ],
-    'subject' => StringHelper::truncate($feedback->message, 100),
+    'subject' => StringHelper::truncate('Problem: Authorization', 100),
     'comment' => [
         'body' => 'Authorization not works!'
     ],
