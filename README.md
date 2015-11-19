@@ -10,15 +10,31 @@ Add the following line to composer.json, __require__ section
 ```
 Add a component to your main.php config file
 ```php
-'zendesk' => [
-    'class' => 'hutsi\zendesk\Client',
-    'apiKey' => 'YOUR_API_KEY',
-    'user' => 'YOUR_USER',
-    'baseUrl' => 'https://rostelecom.YOUR_PROJECT_NAME.com/api/v2',
-    'password' => 'YOUR_PASSWORD',
-    'authType' => 'basic'
-],
+'components' =>
+    'zendesk' => [
+        'class' => 'hutsi\zendesk\Client',
+        'apiKey' => 'YOUR_API_KEY',
+        'user' => 'YOUR_USER',
+        'baseUrl' => 'https://rostelecom.YOUR_PROJECT_NAME.com/api/v2',
+        'password' => 'YOUR_PASSWORD',
+        'authType' => 'basic'
+    ]
+]
 ```
+The most simple example is:
+Create an instance of Zendesk Client
+```php
+$client = new hutsi\zendesk\Client();
+```
+Execute
+```
+$results = $client->execute('GET', '/users.json', []);
+```
+OR
+```php
+$results = $client->get('/users.json', []);
+```
+Another variant is to use build-in plugin functions to work with Users, Tickets, Search, Attachments instances.
 In your form handler use:
 ```php
 use common\helpers\StringHelper;
