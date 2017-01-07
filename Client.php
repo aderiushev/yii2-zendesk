@@ -79,7 +79,7 @@ class Client extends Component
     public function execute($method, $requestUrl, $options = [])
     {
         try {
-            return $this->httpClient->request($this->baseUrl . $requestUrl, $method, null, $options);
+            return $this->httpClient->request($method, $this->baseUrl . $requestUrl, null, $options);
         }
         catch(\Exception $e) {
             throw $e;
