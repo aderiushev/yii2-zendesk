@@ -5,7 +5,7 @@ Yii2 plugin for zendesk service support (https://www.zendesk.com)
 Add the following line to composer.json, __require__ section
 ```json
 "require": {
-    "hutsi/yii2-zendesk": "3.1",
+    "hutsi/yii2-zendesk": "3.3",
 } 
 ```
 Add a component to your main.php config file
@@ -15,7 +15,7 @@ Add a component to your main.php config file
         'class' => 'hutsi\zendesk\Client',
         'apiKey' => 'YOUR_API_KEY',
         'user' => 'YOUR_USER',
-        'baseUrl' => 'https://rostelecom.YOUR_PROJECT_NAME.com/api/v2',
+        'baseUrl' => 'https://SUBDOMAIN.zendesk.com/api/v2',
         'password' => 'YOUR_PASSWORD',
         'authType' => 'basic'
     ]
@@ -46,7 +46,7 @@ use Yii;
 use yii\web\UploadedFile;
 ```
 
-If you wants to use uploads in your feedback form - you have to use ```\yii\web\UploadedFile``` instanse
+If you wants to use upload, you should use a well-known ```\yii\web\UploadedFile``` instanse
 ```php
 $uploadedFile = new UploadedFile(['tempName' => 'YOUR_FILE_TEMPNAME', 'name' => 'YOUR_FILE_NAME]);
 ```
@@ -56,17 +56,17 @@ $zAttachment = new Attachment(['uploadedFile' => $uploadedFile]);
 $token = $zAttachment->save();
 ```
 You can also use zendesk search API for existing Users of your zendesk account
+If there are no such users - let's create it
 ```php
-$search = new Search(['query' => ['email' => '"derushev.alexey@gmail.com"']]);
+$search = new Search(['query' => ['email' => '"user@example.com"']]);
 if ($zUsers = $search->users()) {
     $zUser = $zUsers[0];
-}
-else {
-    $zUser = new User(['email' => 'derushev.alexey@gmail.com');
+} else {
+    $zUser = new User(['email' => 'user@example.com');
     $zUser->save();
 }
 ```
-And finally, lets create a Ticket instance
+And finally, it's time to create a Ticket instance
 ```php
 $zTicket = new Ticket([
     'requester_id' => $zUser->id,
