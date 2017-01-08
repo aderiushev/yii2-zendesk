@@ -5,7 +5,7 @@ Yii2 plugin for zendesk service support (https://www.zendesk.com)
 Add the following line to composer.json, __require__ section
 ```json
 "require": {
-    "hutsi/yii2-zendesk": "3.3",
+    "hutsi/yii2-zendesk": ">=3.3",
 } 
 ```
 Add a component to your main.php config file
